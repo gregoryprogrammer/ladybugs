@@ -117,18 +117,18 @@ class Meadow(object):
         self.walls = []
 
         size = kwargs.get('size')
-        x_tiles = size[0] // self.tile
-        y_tiles = size[1] // self.tile
+        self.x_tiles = size[0] // self.tile
+        self.y_tiles = size[1] // self.tile
 
-        self.size = x_tiles * self.tile, y_tiles * self.tile
+        self.size = self.x_tiles * self.tile, self.y_tiles * self.tile
 
-        for x in range(-1, x_tiles + 1):
+        for x in range(-1, self.x_tiles + 1):
             self.walls.append((x, -1))
-            self.walls.append((x, y_tiles))
+            self.walls.append((x, self.y_tiles))
 
-        for y in range(-1, y_tiles + 1):
+        for y in range(-1, self.y_tiles + 1):
             self.walls.append((-1, y))
-            self.walls.append((x_tiles, y))
+            self.walls.append((self.x_tiles, y))
 
         self.background_img = create_background(self.size, self.tile)
         self.sweet_img = pygame.transform.scale(
@@ -142,10 +142,14 @@ class Meadow(object):
             bug.update(dt)
 
     def add_sweet(self, tile_pos):
-        self.sweets.append(tile_pos)
+        if tile_pos not in self.sweets:
+            self.sweets.append(tile_pos)
 
     def delete_sweet(self, sweet):
         self.sweets.remove(sweet)
+
+    def clear_sweets(self):
+        self.sweets = []
 
     def add_bug(self, bug_id, bug_name, tile_pos):
         if bug_id in self.bugs.keys():
@@ -202,7 +206,8 @@ class Meadow(object):
         bug.direction = direction
         bug.move_time = 0
 
-    def reset_bug_positions(self):
+    def reset(self):
+        self.sweets = []
         bugs = self.bugs.copy()
         for bug_id, bug in bugs.items():
             bug.score = 0

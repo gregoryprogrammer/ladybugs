@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import json
+import random
 import threading
 import socketserver
 
@@ -28,7 +29,9 @@ globalloop = True
 
 class ArenaState(Enum):
     FREEGAME = 0
-    PAUSE = 1
+    CHALLENGE_WAIT = 1
+    CHALLENGE = 2
+    PAUSE = 3
 
 arena_state = ArenaState.PAUSE
 
@@ -37,10 +40,17 @@ print('Available ladybugs:', LADYBUGS_IDS)
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
+        global arena_state
         print('Bug connection incoming')
         try:
             bug_id = str(self.request.recv(config.MSG_LEN), 'ascii')
             print('bug_id:', bug_id)
+
+            if arena_state == ArenaState.CHALLENGE:
+                jdata = {'server_msg': 'Trwają zawody. Poczekaj na następną rundę.'}
+                tosend = bytes(json.dumps(jdata), 'ascii')
+                self.request.sendall(tosend)
+                return
 
             if bug_id not in LADYBUGS_IDS:
 
@@ -95,7 +105,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 bug_info['server_msg'] = 'Hello'
                 bug_info['score'] = bug.score
 
-                global arena_state
                 print(arena_state)
 
                 if arena_state == ArenaState.FREEGAME:
@@ -104,10 +113,17 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 elif arena_state == ArenaState.PAUSE:
                     bug_info['server_msg'] = 'Pauza'
                     bug_info['arena_state'] = 'pause'
+                elif arena_state == ArenaState.CHALLENGE_WAIT:
+                    bug_info['server_msg'] = 'Czekam na zawodników'
+                    bug_info['arena_state'] = 'challenge_wait'
+                elif arena_state == ArenaState.CHALLENGE:
+                    bug_info['server_msg'] = 'Trwają zawody!'
+                    bug_info['arena_state'] = 'challene'
 
                 # send bug and arena info
                 #
                 tosend = bytes(json.dumps(bug_info), 'ascii')
+                print('tosned', tosend)
                 self.request.sendall(tosend)
 
                 # waiting for instruction/order
@@ -115,7 +131,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 order = str(self.request.recv(config.MSG_LEN), 'ascii')
                 # print('Bug:', bug_id, 'order:', order)
 
-                if arena_state == ArenaState.PAUSE:
+                if arena_state in (ArenaState.PAUSE, ArenaState.CHALLENGE_WAIT):
                     continue
 
                 if order not in LADYBUGS_ORDERS:
@@ -161,14 +177,6 @@ ladybugs_txt = font.render('Ranking biedronek', True, config.COLOR_WHITE)
 meadow_pos = (25, 25)
 ranking_pos = (int(0.8 * config.SERVER_WINDOW_SIZE[0]), 25)
 
-meadow.add_sweet((1, 1))
-meadow.add_sweet((2, 2))
-meadow.add_sweet((3, 3))
-meadow.add_sweet((4, 3))
-meadow.add_sweet((5, 3))
-meadow.add_sweet((6, 3))
-meadow.add_sweet((7, 3))
-
 def arena_pause():
     global arena_state
     arena_state = ArenaState.PAUSE
@@ -176,12 +184,54 @@ def arena_pause():
 def arena_start():
     global arena_state
     arena_state = ArenaState.FREEGAME
+    
+def arena_wait():
+    global arena_state
+    arena_state = ArenaState.CHALLENGE_WAIT
+
+def arena_challenge():
+    global arena_state
+    arena_state = ArenaState.CHALLENGE
+
+def map_one():
+    sweets = []
+    while len(sweets) < 10:
+        x = random.random() * meadow.x_tiles
+        y = random.random() * meadow.y_tiles
+        x = int(x)
+        y = int(y)
+        if (x, y) not in sweets:
+            sweets.append((x, y))
+    for sweet in sweets:
+        meadow.add_sweet(sweet)
+
+def map_two():
+    meadow.clear_sweets()
+    for x in range(4, meadow.x_tiles - 4, 2):
+        for y in range(2, meadow.y_tiles - 2, 2):
+            meadow.add_sweet((x, y))
+
+def map_three():
+    meadow.clear_sweets()
+    for x in range(5, meadow.x_tiles - 5):
+        for y in range(2, meadow.y_tiles, 3):
+            meadow.add_sweet((x, y))
+    pass
+
 
 BUTTON_SIZE = (200, 50)
 buttons = []
-buttons.append(utils.Button((25, 720), BUTTON_SIZE, 'Reset', meadow.reset_bug_positions))
-buttons.append(utils.Button((25, 780), BUTTON_SIZE, 'Start', arena_start))
-buttons.append(utils.Button((25, 840), BUTTON_SIZE, 'Pauza', arena_pause))
+
+buttons.append(utils.Button((25, 700), BUTTON_SIZE, 'RESET', meadow.reset))
+buttons.append(utils.Button((25, 760), BUTTON_SIZE, 'TRENING', arena_start))
+buttons.append(utils.Button((25, 820), BUTTON_SIZE, 'PAUSE', arena_pause))
+
+buttons.append(utils.Button((250, 700), BUTTON_SIZE, 'WAIT', arena_wait))
+buttons.append(utils.Button((250, 760), BUTTON_SIZE, 'CHALLENGE', arena_challenge))
+
+buttons.append(utils.Button((550, 700), BUTTON_SIZE, 'RANDOM 10', map_one))
+buttons.append(utils.Button((550, 760), BUTTON_SIZE, 'MAPA 2', map_two))
+buttons.append(utils.Button((550, 820), BUTTON_SIZE, 'MAPA 3', map_three))
 
 while window.loop():
 
@@ -216,7 +266,7 @@ while window.loop():
 
     window.draw(ladybugs_txt, ranking_pos)
     for i, (bug_id, bug_name, score) in enumerate(ranking):
-        tile = config.TILE
+        tile = config.TILE // 2
         bug_img = assets.get_bug_img(bug_id)
         bug_img = pygame.transform.scale(bug_img, (tile, tile))  # FIXME
 
@@ -224,7 +274,7 @@ while window.loop():
         name_img = font.render('{}'.format(bug_name), True, config.COLOR_YELLOW)
 
         x = ranking_pos[0]
-        y = ranking_pos[1] + (tile * 1.1) * (i + 1)
+        y = ranking_pos[1] + tile + (tile * 1.1) * (i + 1)
         y_score = y + tile / 2 - score_img.get_size()[1] / 2
 
         window.draw(bug_img, (x, y))
