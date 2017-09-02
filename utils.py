@@ -71,6 +71,28 @@ class Window(object):
         pygame.display.flip()
 
 
+class Button(object):
+    def __init__(self, pos, size, text, callback):
+        self.pos = pos
+        self.size = size
+        self.text = text
+        self.callback = callback
+        self.img = pygame.Surface(size)
+        self.img_hovered = pygame.Surface(size)
+        self.img.fill(config.COLOR_GRAY_LIGHT)
+        self.img_hovered.fill(config.COLOR_YELLOW)
+
+        font = assets.load_font('Ubuntu-Regular.ttf', 24)
+        txt = font.render(text, True, config.COLOR_BLACK)
+        self.img.blit(txt, ((size[0] - txt.get_width()) // 2, (size[1] - txt.get_height()) // 2))
+        self.img_hovered.blit(txt, ((size[0] - txt.get_width()) // 2, (size[1] - txt.get_height()) // 2))
+
+    def collides(self, pos):
+        cx = self.pos[0] <= pos[0] <= (self.pos[0] + self.size[0])
+        cy = self.pos[1] <= pos[1] <= (self.pos[1] + self.size[1])
+        return cx and cy
+
+
 class Bug(object):
 
     def __init__(self, **kwargs):
@@ -179,6 +201,13 @@ class Meadow(object):
 
         bug.direction = direction
         bug.move_time = 0
+
+    def reset_bug_positions(self):
+        bugs = self.bugs.copy()
+        for bug_id, bug in bugs.items():
+            bug.tile_pos = (0, 0)
+        self.bugs = bugs
+        print('it works')
 
     def highlight(self, pos):
         if not 0 <= pos[0] <= self.size[0] or not 0 <= pos[1] <= self.size[1]:

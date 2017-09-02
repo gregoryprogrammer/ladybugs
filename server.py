@@ -6,6 +6,8 @@ import json
 import threading
 import socketserver
 
+from enum import Enum
+
 import pygame
 import config
 import assets
@@ -23,6 +25,12 @@ window = utils.Window(name='LadyBugs - server', size=config.SERVER_WINDOW_SIZE)
 meadow = utils.Meadow(size=MEADOW_SIZE, tile=config.TILE)
 
 globalloop = True
+
+class ArenaState(Enum):
+    FREEGAME = 0
+    PAUSE = 1
+
+arena_state = ArenaState.PAUSE
 
 print('Available ladybugs:', LADYBUGS_IDS)
 
@@ -87,6 +95,13 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 bug_info['server_msg'] = 'Hello'
                 bug_info['score'] = bug.score
 
+                if arena_state == ArenaState.FREEGAME:
+                    bug_info['server_msg'] = 'Ćwiczenia'
+                    bug_info['arena_state'] = 'freegame'
+                elif arena_state == ArenaState.PAUSE:
+                    bug_info['server_msg'] = 'Pauza'
+                    bug_info['arena_state'] = 'pause'
+
                 # send bug and arena info
                 #
                 tosend = bytes(json.dumps(bug_info), 'ascii')
@@ -138,7 +153,7 @@ font = assets.load_font('Ubuntu-Regular.ttf', 24)
 ladybugs_txt = font.render('Ranking biedronek', True, config.COLOR_WHITE)
 
 meadow_pos = (25, 25)
-ranking_pos = (1300, 25)
+ranking_pos = (int(0.8 * config.SERVER_WINDOW_SIZE[0]), 25)
 
 meadow.add_sweet((1, 1))
 meadow.add_sweet((2, 2))
@@ -148,18 +163,37 @@ meadow.add_sweet((5, 3))
 meadow.add_sweet((6, 3))
 meadow.add_sweet((7, 3))
 
+def arena_pause():
+    arena_state = ArenaState.PAUSE
+
+def arena_start():
+    arena_state = ArenaState.FREEGAME
+
+BUTTON_SIZE = (200, 50)
+buttons = []
+buttons.append(utils.Button((25, 720), BUTTON_SIZE, 'Reset', meadow.reset_bug_positions))
+buttons.append(utils.Button((25, 780), BUTTON_SIZE, 'Start', arena_start))
+buttons.append(utils.Button((25, 840), BUTTON_SIZE, 'Pauza', arena_pause))
+
 while window.loop():
 
     # logic
     #
-    mmpos = pygame.mouse.get_pos()
-    mmpos = mmpos[0] - meadow_pos[0], mmpos[1] - meadow_pos[1]
+    mouse_pos = pygame.mouse.get_pos()
+    mmpos = mouse_pos[0] - meadow_pos[0], mouse_pos[1] - meadow_pos[1]
 
     meadow.update(config.FPS / 1000.0)
     highlighted_tile = meadow.highlight(mmpos)
 
     if window.mouse_just_pressed and highlighted_tile:
         meadow.add_sweet(highlighted_tile)
+
+    # check buttons
+    if window.mouse_just_pressed:
+        for button in buttons:
+            print('check button', button)
+            if button.collides(mouse_pos):
+                button.callback()
 
     ranking = meadow.get_ranking()
     ranking = reversed(sorted(ranking, key=lambda tup: tup[2]))
@@ -186,6 +220,12 @@ while window.loop():
         window.draw(bug_img, (x, y))
         window.draw(score_img, (x + tile * 2, y_score))
         window.draw(name_img, (x + tile * 4, y_score))
+
+    for button in buttons:
+        if button.collides(mouse_pos):
+            window.draw(button.img_hovered, button.pos)
+        else:
+            window.draw(button.img, button.pos)
 
     # flip
     #
