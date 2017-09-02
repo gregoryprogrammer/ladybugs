@@ -7,6 +7,7 @@ import threading
 import socketserver
 
 import pygame
+import config
 import assets
 import utils
 
@@ -16,8 +17,10 @@ LADYBUGS_IDS = [os.path.splitext(bug)[0] for bug in LADYBUGS_IMAGES]
 
 LADYBUGS_ORDERS = ('N', 'S', 'W', 'E', 'X')
 
-window = utils.Window(name='LadyBugs - server', size=(1600, 900))
-meadow = utils.Meadow(size=(1200, 700), tile=utils.CONF['tile'])
+MEADOW_SIZE = int(config.SERVER_WINDOW_SIZE[0] * 0.75), int(config.SERVER_WINDOW_SIZE[1] * 0.75)
+
+window = utils.Window(name='LadyBugs - server', size=config.SERVER_WINDOW_SIZE)
+meadow = utils.Meadow(size=MEADOW_SIZE, tile=config.TILE)
 
 globalloop = True
 
@@ -28,7 +31,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         print('Bug connection incoming')
         try:
-            bug_id = str(self.request.recv(utils.MSG_LEN), 'ascii')
+            bug_id = str(self.request.recv(config.MSG_LEN), 'ascii')
             print('bug_id:', bug_id)
 
             if bug_id not in LADYBUGS_IDS:
@@ -56,7 +59,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             mainloop = meadow.add_bug(bug_id, 'Nowy', (0, 0))
 
             while mainloop and globalloop:
-                time.sleep(utils.CONF['bug_delay'])
+                time.sleep(config.BUG_DELAY)
 
                 bug = meadow.get_bug(bug_id)
 
@@ -91,7 +94,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
                 # waiting for instruction/order
                 #
-                order = str(self.request.recv(utils.MSG_LEN), 'ascii')
+                order = str(self.request.recv(config.MSG_LEN), 'ascii')
                 # print('Bug:', bug_id, 'order:', order)
 
                 if order not in LADYBUGS_ORDERS:
@@ -125,14 +128,14 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         print('finally')
 
 socketserver.ThreadingTCPServer.allow_reuse_address = True
-server = socketserver.ThreadingTCPServer(utils.CONF['server_address'], ThreadedTCPRequestHandler)
+server = socketserver.ThreadingTCPServer(config.SERVER_ADDRESS, ThreadedTCPRequestHandler)
 
 server_thread = threading.Thread(target=server.serve_forever)
 server_thread.daemon = True
 server_thread.start()
 
 font = assets.load_font('Ubuntu-Regular.ttf', 24)
-ladybugs_txt = font.render('Ranking biedronek', True, utils.COLOR['white'])
+ladybugs_txt = font.render('Ranking biedronek', True, config.COLOR_WHITE)
 
 meadow_pos = (25, 25)
 ranking_pos = (1300, 25)
@@ -152,7 +155,7 @@ while window.loop():
     mmpos = pygame.mouse.get_pos()
     mmpos = mmpos[0] - meadow_pos[0], mmpos[1] - meadow_pos[1]
 
-    meadow.update(utils.CONF['fps'] / 1000.0)
+    meadow.update(config.FPS / 1000.0)
     highlighted_tile = meadow.highlight(mmpos)
 
     if window.mouse_just_pressed and highlighted_tile:
@@ -169,12 +172,12 @@ while window.loop():
 
     window.draw(ladybugs_txt, ranking_pos)
     for i, (bug_id, bug_name, score) in enumerate(ranking):
-        tile = utils.CONF['tile'] // 2
+        tile = config.TILE
         bug_img = assets.get_bug_img(bug_id)
         bug_img = pygame.transform.scale(bug_img, (tile, tile))  # FIXME
 
-        score_img = font.render('{}'.format(score), True, utils.COLOR['white'])
-        name_img = font.render('{}'.format(bug_name), True, utils.COLOR['yellow'])
+        score_img = font.render('{}'.format(score), True, config.COLOR_WHITE)
+        name_img = font.render('{}'.format(bug_name), True, config.COLOR_YELLOW)
 
         x = ranking_pos[0]
         y = ranking_pos[1] + (tile * 1.1) * (i + 1)

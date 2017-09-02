@@ -6,6 +6,7 @@ import random
 import threading
 
 import pygame
+import config
 import program
 import utils
 import assets
@@ -18,17 +19,17 @@ info['score'] = 0
 def row(num):
     return num * 32
 
-window = utils.Window(name='Biedronka', size=utils.CONF['window'])
+window = utils.Window(name='Biedronka', size=config.CLIENT_WINDOW_SIZE)
 
-background_img = pygame.Surface(utils.CONF['window'])
-background_img.fill(utils.COLOR['gray'])
+background_img = pygame.Surface(config.CLIENT_WINDOW_SIZE)
+background_img.fill(config.COLOR_GRAY)
 
 font = assets.load_font('Ubuntu-Regular.ttf', 24)
 
-conn_ok = font.render('Połączono!', True, utils.COLOR['green'])
-conn_error = font.render('Czekam na połączenie...', True, utils.COLOR['red'])
+conn_ok = font.render('Połączono!', True, config.COLOR_GREEN)
+conn_error = font.render('Czekam na połączenie...', True, config.COLOR_RED)
 
-your_txt = font.render('Twoja biedronka: {}'.format(program.BUG_NAME), True, utils.COLOR['white'])
+your_txt = font.render('Twoja biedronka: {}'.format(program.BUG_NAME), True, config.COLOR_WHITE)
 
 def client():
     global info
@@ -55,7 +56,7 @@ def client():
 
             try:
                 sock.sendall(bytes(program.BUG_ID, 'ascii'))
-                received = str(sock.recv(utils.MSG_LEN), 'ascii')
+                received = str(sock.recv(config.MSG_LEN), 'ascii')
             except:
                 print('client greet exc', sys.exc_info())
             else:
@@ -66,7 +67,7 @@ def client():
             try:
                 while True:
                     print('Waiting for field state')
-                    received = sock.recv(utils.MSG_LEN)
+                    received = sock.recv(config.MSG_LEN)
                     if len(received) == 0:
                         break
                     jdata = json.loads(str(received, 'ascii'))
@@ -94,9 +95,9 @@ client_thread.start()
 
 while window.loop():
 
-    server_txt = font.render('Komunikat serwera: {}'.format(info['server_msg']), True, utils.COLOR['white'])
+    server_txt = font.render('Komunikat serwera: {}'.format(info['server_msg']), True, config.COLOR_WHITE)
 
-    score_txt = font.render('Zebrane cukierki: {}'.format(info['score']), True, utils.COLOR['white'])
+    score_txt = font.render('Zebrane cukierki: {}'.format(info['score']), True, config.COLOR_WHITE)
     place_txt = font.render('Miejsce: {}'.format(3), True, (200, 200, 200))
 
     window.draw(background_img, (0, 0))

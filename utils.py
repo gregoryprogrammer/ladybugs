@@ -1,43 +1,27 @@
 import os
 import pygame
 
+import config
 import assets
 
 MAIN_DIR = os.path.split(os.path.abspath(__file__))[0]
-MSG_LEN = 4096
-
-CONF = {
-    'window': (800, 600),
-    'tile': 50,
-    'fps': 60,
-    'bug_delay': 250.0 / 1000.0,
-    'server_address': ('192.168.203.108', 32323)
-}
-
-COLOR = {
-    'gray': (20, 20, 20),
-    'gray_light': (60, 60, 60),
-    'white': (235, 235, 235),
-    'red': (240, 20, 20),
-    'green': (20, 240, 20),
-    'blue': (20, 20, 240),
-    'yellow': (180, 180, 20)
-}
 
 def create_background(size, tile):
-    background = pygame.Surface((size[0], size[1]))
-    background.fill(COLOR['gray'])
     x_tiles, y_tiles = size[0] // tile, size[1] // tile
+    width = x_tiles * tile
+    height = y_tiles * tile
+    background = pygame.Surface((width, height))
+    background.fill(config.COLOR_GRAY)
 
     for ty in range(0, y_tiles):
         for tx in range(0, x_tiles):
             x = tx * tile
             y = ty * tile
-            pygame.draw.line(background, COLOR['gray_light'], (x, 0), (x, size[1]))
-            pygame.draw.line(background, COLOR['gray_light'], (0, y), (size[0], y))
+            pygame.draw.line(background, config.COLOR_GRAY_LIGHT, (x, 0), (x, size[1]))
+            pygame.draw.line(background, config.COLOR_GRAY_LIGHT, (0, y), (size[0], y))
 
-    pygame.draw.line(background, COLOR['gray_light'], (0, size[1] - 1), (size[0], size[1] - 1))
-    pygame.draw.line(background, COLOR['gray_light'], (size[0] - 1, 0), (size[0] - 1, size[1]))
+    pygame.draw.line(background, config.COLOR_GRAY_LIGHT, (0, height - 1), (width, height - 1))
+    pygame.draw.line(background, config.COLOR_GRAY_LIGHT, (width - 1, 0), (width - 1, height))
 
     return background
 
@@ -49,7 +33,7 @@ class Window(object):
         pygame.display.set_caption(kwargs.get('name'))
         self.screen = pygame.display.set_mode(
             kwargs.get('size'),
-            pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.RESIZABLE
+            pygame.HWSURFACE | pygame.DOUBLEBUF
         )
         self.clock = pygame.time.Clock()
         self.mouse_just_pressed = False
@@ -100,19 +84,21 @@ class Bug(object):
 
     def update(self, dt):
         self.move_time += dt
-        self.move_time = min(CONF['bug_delay'], self.move_time)
+        self.move_time = min(config.BUG_DELAY, self.move_time)
 
 class Meadow(object):
 
     def __init__(self, **kwargs):
-        self.size = kwargs.get('size')
         self.tile = kwargs.get('tile')
         self.bugs = {}
         self.sweets = []
         self.walls = []
 
-        x_tiles = self.size[0] // self.tile
-        y_tiles = self.size[1] // self.tile
+        size = kwargs.get('size')
+        x_tiles = size[0] // self.tile
+        y_tiles = size[1] // self.tile
+
+        self.size = x_tiles * self.tile, y_tiles * self.tile
 
         for x in range(-1, x_tiles + 1):
             self.walls.append((x, -1))
@@ -213,8 +199,8 @@ class Meadow(object):
             bug_pos = bug.tile_pos[0] * self.tile, bug.tile_pos[1] * self.tile
 
             t = bug.move_time
-            bx = prev_bug_pos[0] + (bug_pos[0] - prev_bug_pos[0]) * (t / CONF['bug_delay'])
-            by = prev_bug_pos[1] + (bug_pos[1] - prev_bug_pos[1]) * (t / CONF['bug_delay'])
+            bx = prev_bug_pos[0] + (bug_pos[0] - prev_bug_pos[0]) * (t / config.BUG_DELAY)
+            by = prev_bug_pos[1] + (bug_pos[1] - prev_bug_pos[1]) * (t / config.BUG_DELAY)
 
             bug_pos = (bx, by)
 
