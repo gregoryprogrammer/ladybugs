@@ -25,6 +25,12 @@ def create_background(size, tile):
 
     return background
 
+def printfr(text):
+    L = len(text)
+    print('.-' + '-' * L + '-.')
+    print('| ' + text + ' |')
+    print('\'-' + '-' * L + '-\'')
+
 class Window(object):
 
     def __init__(self, **kwargs):

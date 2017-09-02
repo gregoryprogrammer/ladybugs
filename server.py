@@ -105,8 +105,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 bug_info['server_msg'] = 'Hello'
                 bug_info['score'] = bug.score
 
-                print(arena_state)
-
                 if arena_state == ArenaState.FREEGAME:
                     bug_info['server_msg'] = 'Ćwiczenia'
                     bug_info['arena_state'] = 'freegame'
@@ -118,12 +116,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     bug_info['arena_state'] = 'challenge_wait'
                 elif arena_state == ArenaState.CHALLENGE:
                     bug_info['server_msg'] = 'Trwają zawody!'
-                    bug_info['arena_state'] = 'challene'
+                    bug_info['arena_state'] = 'challenge'
 
                 # send bug and arena info
                 #
                 tosend = bytes(json.dumps(bug_info), 'ascii')
-                print('tosned', tosend)
                 self.request.sendall(tosend)
 
                 # waiting for instruction/order
@@ -184,7 +181,7 @@ def arena_pause():
 def arena_start():
     global arena_state
     arena_state = ArenaState.FREEGAME
-    
+
 def arena_wait():
     global arena_state
     arena_state = ArenaState.CHALLENGE_WAIT
@@ -207,17 +204,25 @@ def map_one():
 
 def map_two():
     meadow.clear_sweets()
+    sweets = []
     for x in range(4, meadow.x_tiles - 4, 2):
         for y in range(2, meadow.y_tiles - 2, 2):
-            meadow.add_sweet((x, y))
+            sweets.append((x, y))
+
+    random.shuffle(sweets)
+    for sweet in sweets:
+        meadow.add_sweet(sweet)
 
 def map_three():
     meadow.clear_sweets()
+    sweets = []
     for x in range(5, meadow.x_tiles - 5):
         for y in range(2, meadow.y_tiles, 3):
-            meadow.add_sweet((x, y))
-    pass
+            sweets.append((x, y))
 
+    random.shuffle(sweets)
+    for sweet in sweets:
+        meadow.add_sweet(sweet)
 
 BUTTON_SIZE = (200, 50)
 buttons = []
@@ -255,8 +260,6 @@ while window.loop():
 
     ranking = meadow.get_ranking()
     ranking = reversed(sorted(ranking, key=lambda tup: tup[2]))
-
-    print('window loop', arena_state)
 
     # draw
     #

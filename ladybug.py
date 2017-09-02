@@ -5,6 +5,8 @@ import time
 import random
 import threading
 
+from pprint import pprint
+
 import pygame
 import config
 import program
@@ -66,22 +68,31 @@ def client():
 
             try:
                 while True:
-                    print('Waiting for field state')
                     received = sock.recv(config.MSG_LEN)
                     if len(received) == 0:
                         break
                     jdata = json.loads(str(received, 'ascii'))
-                    print('.------------------')
-                    print('| Dane:\n| ', end='')
-                    print(jdata)
-
                     info['score'] = jdata.get('score', 0)
-
-                    order = program.PROGRAM(jdata)
                     info['server_msg'] = jdata.get('server_msg')
-                    print('| Twój rozkaz:', order)
-                    print('\'-----')
-                    sock.sendall(bytes(order, 'ascii'))
+                    arena_state = jdata.get('arena_state')
+
+                    order = None
+                    if arena_state not in ('challenge_wait', 'pause'):
+                        order = program.PROGRAM(jdata)
+
+                    print()
+                    utils.printfr('Dane:')
+                    pprint(jdata)
+
+                    if order:
+                        utils.printfr('Twój rozkaz: ' + order)
+                    else:
+                        utils.printfr('Brak rozkazu. Przerwa w treningu lub zawodach.')
+
+                    if isinstance(order, str):
+                        sock.sendall(bytes(order, 'ascii'))
+                    else:
+                        sock.sendall(bytes('X', 'ascii'))
             except:
                 print(sys.exc_info())
             finally:
@@ -92,6 +103,9 @@ def client():
 client_thread = threading.Thread(target=client)
 client_thread.daemon = True
 client_thread.start()
+
+bug_img = assets.get_bug_img(program.BUG_ID)
+info_q_txt = font.render('Wciśnij Q by wyłączyć program.', True, config.COLOR_WHITE)
 
 while window.loop():
 
@@ -106,7 +120,9 @@ while window.loop():
         window.draw(conn_ok, (0, row(0)))
     else:
         window.draw(conn_error, (0, row(0)))
-    window.draw(server_txt, (0, row(1)))
-    window.draw(your_txt, (0, row(3)))
-    window.draw(score_txt, (0, row(4)))
+    window.draw(info_q_txt, (0, row(1)))
+    window.draw(server_txt, (0, row(3)))
+    window.draw(your_txt, (0, row(5)))
+    window.draw(score_txt, (0, row(6)))
+    window.draw(bug_img, (50, row(8)))
     window.render()
