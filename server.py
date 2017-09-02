@@ -95,6 +95,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 bug_info['server_msg'] = 'Hello'
                 bug_info['score'] = bug.score
 
+                global arena_state
+                print(arena_state)
+
                 if arena_state == ArenaState.FREEGAME:
                     bug_info['server_msg'] = 'Ćwiczenia'
                     bug_info['arena_state'] = 'freegame'
@@ -111,6 +114,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 #
                 order = str(self.request.recv(config.MSG_LEN), 'ascii')
                 # print('Bug:', bug_id, 'order:', order)
+
+                if arena_state == ArenaState.PAUSE:
+                    continue
 
                 if order not in LADYBUGS_ORDERS:
                     print('Bug:', bug_id, 'unrecognized order:', order)
@@ -164,9 +170,11 @@ meadow.add_sweet((6, 3))
 meadow.add_sweet((7, 3))
 
 def arena_pause():
+    global arena_state
     arena_state = ArenaState.PAUSE
 
 def arena_start():
+    global arena_state
     arena_state = ArenaState.FREEGAME
 
 BUTTON_SIZE = (200, 50)
@@ -197,6 +205,8 @@ while window.loop():
 
     ranking = meadow.get_ranking()
     ranking = reversed(sorted(ranking, key=lambda tup: tup[2]))
+
+    print('window loop', arena_state)
 
     # draw
     #

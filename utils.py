@@ -33,7 +33,7 @@ class Window(object):
         pygame.display.set_caption(kwargs.get('name'))
         self.screen = pygame.display.set_mode(
             kwargs.get('size'),
-            pygame.HWSURFACE | pygame.DOUBLEBUF
+            pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.RESIZABLE
         )
         self.clock = pygame.time.Clock()
         self.mouse_just_pressed = False
@@ -205,6 +205,7 @@ class Meadow(object):
     def reset_bug_positions(self):
         bugs = self.bugs.copy()
         for bug_id, bug in bugs.items():
+            bug.score = 0
             bug.tile_pos = (0, 0)
         self.bugs = bugs
         print('it works')
