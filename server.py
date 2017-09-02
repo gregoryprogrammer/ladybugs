@@ -43,20 +43,24 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         global arena_state
         print('Bug connection incoming')
         try:
-            recv = str(self.request.recv(config.MSG_LEN), 'ascii')
-            bug_id, bug_name = recv.split(',')
+            recv = str(self.request.recv(config.MSG_LEN), 'utf8')
+            print('RECV = ', recv)
+            try:
+                bug_id, bug_name = recv.split(',')
+            except:
+                return
             print('bug_id:', bug_id)
 
             if arena_state == ArenaState.CHALLENGE:
                 jdata = {'server_msg': 'Trwają zawody. Poczekaj na następną rundę.'}
-                tosend = bytes(json.dumps(jdata), 'ascii')
+                tosend = bytes(json.dumps(jdata), 'utf8')
                 self.request.sendall(tosend)
                 return
 
             if bug_id not in LADYBUGS_IDS:
 
                 jdata = {'server_msg': 'Brak biedronki {}.'.format(bug_id)}
-                tosend = bytes(json.dumps(jdata), 'ascii')
+                tosend = bytes(json.dumps(jdata), 'utf8')
                 self.request.sendall(tosend)
 
                 print('bug {} unauthorized'.format(bug_id))
@@ -65,14 +69,14 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             elif bug_id in meadow.bugs_ids():
 
                 jdata = {'server_msg': 'Biedronka {} jest już zajęta przez kogoś innego!'.format(bug_id)}
-                tosend = bytes(json.dumps(jdata), 'ascii')
+                tosend = bytes(json.dumps(jdata), 'utf8')
                 self.request.sendall(tosend)
 
                 print('bug {} already controlled'.format(bug_id))
                 return
 
             jdata = {'server_msg': 'Witaj na arenie!'}
-            tosend = bytes(json.dumps(jdata), 'ascii')
+            tosend = bytes(json.dumps(jdata), 'utf8')
             self.request.sendall(tosend)
 
             mainloop = meadow.add_bug(bug_id, bug_name)
@@ -121,12 +125,12 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
                 # send bug and arena info
                 #
-                tosend = bytes(json.dumps(bug_info), 'ascii')
+                tosend = bytes(json.dumps(bug_info), 'utf8')
                 self.request.sendall(tosend)
 
                 # waiting for instruction/order
                 #
-                order = str(self.request.recv(config.MSG_LEN), 'ascii')
+                order = str(self.request.recv(config.MSG_LEN), 'utf8')
                 # print('Bug:', bug_id, 'order:', order)
 
                 if arena_state in (ArenaState.PAUSE, ArenaState.CHALLENGE_WAIT):

@@ -69,8 +69,8 @@ def client():
                 info['conn_ok'] = True
 
             try:
-                sock.sendall(bytes('{},{}'.format(BUG_ID, BUG_NAME), 'ascii'))
-                received = str(sock.recv(config.MSG_LEN), 'ascii')
+                sock.sendall(bytes('{},{}'.format(BUG_ID, BUG_NAME), 'utf8'))
+                received = str(sock.recv(config.MSG_LEN), 'utf8')
             except:
                 print('client greet exc', sys.exc_info())
             else:
@@ -83,7 +83,7 @@ def client():
                     received = sock.recv(config.MSG_LEN)
                     if len(received) == 0:
                         break
-                    jdata = json.loads(str(received, 'ascii'))
+                    jdata = json.loads(str(received, 'utf8'))
                     info['score'] = jdata.get('score', 0)
                     info['server_msg'] = jdata.get('server_msg')
                     arena_state = jdata.get('arena_state')
@@ -102,9 +102,9 @@ def client():
                         utils.printfr('Brak rozkazu. Przerwa w treningu lub zawodach.')
 
                     if isinstance(order, str):
-                        sock.sendall(bytes(order, 'ascii'))
+                        sock.sendall(bytes(order, 'utf8'))
                     else:
-                        sock.sendall(bytes('X', 'ascii'))
+                        sock.sendall(bytes('X', 'utf8'))
             except:
                 print(sys.exc_info())
             finally:
