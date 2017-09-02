@@ -1,6 +1,7 @@
 import os
-import pygame
+import random
 
+import pygame
 import config
 import assets
 
@@ -157,11 +158,17 @@ class Meadow(object):
     def clear_sweets(self):
         self.sweets = []
 
-    def add_bug(self, bug_id, bug_name, tile_pos):
+    def add_bug(self, bug_id, bug_name, tile_pos=None):
         if bug_id in self.bugs.keys():
             return False
         print('New bug:', bug_id, bug_name)
         bug = Bug(bug_id=bug_id, bug_name=bug_name)
+
+        if tile_pos is None:
+            x = random.randint(0, self.x_tiles - 1)
+            y = random.randint(0, self.y_tiles - 1)
+            tile_pos = x, y
+
         bug.prev_tile_pos = tile_pos
         bug.tile_pos = tile_pos
         self.bugs[bug_id] = bug
@@ -217,7 +224,9 @@ class Meadow(object):
         bugs = self.bugs.copy()
         for bug_id, bug in bugs.items():
             bug.score = 0
-            bug.tile_pos = (0, 0)
+            x = random.randint(0, self.x_tiles - 1)
+            y = random.randint(0, self.y_tiles - 1)
+            bug.tile_pos = (x, y)
         self.bugs = bugs
         print('it works')
 

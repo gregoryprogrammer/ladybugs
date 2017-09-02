@@ -18,6 +18,18 @@ info['conn_ok'] = False
 info['server_msg'] = 'Brak'
 info['score'] = 0
 
+BUG_ID = program.BUG_ID
+BUG_NAME = program.BUG_NAME
+HOST = program.HOST
+
+try:
+    HOST = sys.argv[1]
+    BUG_ID = sys.argv[2]
+    BUG_NAME = sys.argv[3]
+except:
+    pass
+
+
 def row(num):
     return num * 32
 
@@ -47,7 +59,7 @@ def client():
             print('Trying to connect...')
 
             try:
-                sock.connect((program.HOST, program.PORT))
+                sock.connect((HOST, program.PORT))
             except ConnectionRefusedError:
                 print('Nie moge polaczyc sie do polany! Sprawdz HOST i PORT')
             except:
@@ -57,7 +69,7 @@ def client():
                 info['conn_ok'] = True
 
             try:
-                sock.sendall(bytes(program.BUG_ID, 'ascii'))
+                sock.sendall(bytes('{},{}'.format(BUG_ID, BUG_NAME), 'ascii'))
                 received = str(sock.recv(config.MSG_LEN), 'ascii')
             except:
                 print('client greet exc', sys.exc_info())
@@ -104,7 +116,7 @@ client_thread = threading.Thread(target=client)
 client_thread.daemon = True
 client_thread.start()
 
-bug_img = assets.get_bug_img(program.BUG_ID)
+bug_img = assets.get_bug_img(BUG_ID)
 info_q_txt = font.render('Wciśnij Q by wyłączyć program.', True, config.COLOR_WHITE)
 
 while window.loop():

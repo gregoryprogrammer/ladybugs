@@ -43,7 +43,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         global arena_state
         print('Bug connection incoming')
         try:
-            bug_id = str(self.request.recv(config.MSG_LEN), 'ascii')
+            recv = str(self.request.recv(config.MSG_LEN), 'ascii')
+            bug_id, bug_name = recv.split(',')
             print('bug_id:', bug_id)
 
             if arena_state == ArenaState.CHALLENGE:
@@ -74,7 +75,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             tosend = bytes(json.dumps(jdata), 'ascii')
             self.request.sendall(tosend)
 
-            mainloop = meadow.add_bug(bug_id, 'Nowy', (0, 0))
+            mainloop = meadow.add_bug(bug_id, bug_name)
 
             while mainloop and globalloop:
                 time.sleep(config.BUG_DELAY)
