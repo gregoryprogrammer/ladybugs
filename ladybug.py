@@ -78,7 +78,7 @@ def client():
                     info['score'] = jdata.get('score', 0)
 
                     order = program.PROGRAM(jdata)
-                    server_msg = jdata.get('server_msg')
+                    info['server_msg'] = jdata.get('server_msg')
                     print('| Twój rozkaz:', order)
                     print('\'-----')
                     sock.sendall(bytes(order, 'ascii'))
