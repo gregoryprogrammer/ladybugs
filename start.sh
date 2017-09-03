@@ -1,0 +1,26 @@
+python3 ladybug.py $1 78WS 78WS &
+python3 ladybug.py $1 9WQB 9wQB &
+python3 ladybug.py $1 B23L B23L &
+python3 ladybug.py $1 BET2 BET2 &
+python3 ladybug.py $1 BY8A BY8A &
+python3 ladybug.py $1 EK5C EK5C &
+python3 ladybug.py $1 GG42 GG42 &
+python3 ladybug.py $1 H4DB H4DB &
+python3 ladybug.py $1 HA8X HA8X &
+python3 ladybug.py $1 K44B K44B &
+python3 ladybug.py $1 MQTT MQTT &
+python3 ladybug.py $1 PPKK PPKK &
+python3 ladybug.py $1 PW4X PW4X &
+python3 ladybug.py $1 QT54 QT54 &
+python3 ladybug.py $1 R2B4 R2B4 &
+python3 ladybug.py $1 RK3C RK3C &
+python3 ladybug.py $1 SG13 SG13 &
+python3 ladybug.py $1 T2QQ T2QQ &
+python3 ladybug.py $1 T99S T99S &
+python3 ladybug.py $1 TY3C TY3C &
+python3 ladybug.py $1 UD55 UD55 &
+python3 ladybug.py $1 WK8Q WK8Q &
+python3 ladybug.py $1 Z66F Z66F &
+python3 ladybug.py $1 Z83G Z83G &
+python3 ladybug.py $1 ZW99 ZW99 &
+
