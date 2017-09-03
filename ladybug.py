@@ -116,8 +116,13 @@ client_thread = threading.Thread(target=client)
 client_thread.daemon = True
 client_thread.start()
 
-bug_img = assets.get_bug_img(BUG_ID)
-bug_img = pygame.transform.scale(bug_img, (128, 128))
+try:
+    bug_img = assets.get_bug_img(BUG_ID)
+    bug_img = pygame.transform.scale(bug_img, (128, 128))
+except:
+    print('Zły kod biedronki')
+    # print(sys.exc_info())
+    exit(1)
 info_q_txt = font.render('Wciśnij Q by wyłączyć program.', True, config.COLOR_WHITE)
 
 while window.loop():
