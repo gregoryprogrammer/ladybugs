@@ -130,6 +130,7 @@ class Meadow(object):
         self.bugs = {}
         self.sweets = []
         self.walls = []
+        self.random_sweets = 0
 
         size = kwargs.get('size')
         self.x_tiles = size[0] // self.tile
@@ -155,6 +156,10 @@ class Meadow(object):
     def update(self, dt):
         for bug_id, bug in self.bugs.items():
             bug.update(dt)
+        if self.random_sweets > 0 and len(self.sweets) < self.random_sweets:
+            x = random.randint(1, self.x_tiles - 2)
+            y = random.randint(1, self.y_tiles - 2)
+            self.sweets.append((x, y))
 
     def add_sweet(self, tile_pos):
         if tile_pos not in self.sweets:
@@ -164,6 +169,7 @@ class Meadow(object):
         self.sweets.remove(sweet)
 
     def clear_sweets(self):
+        self.random_sweets = 0
         self.sweets = []
 
     def add_bug(self, bug_id, bug_name, tile_pos=None):
@@ -173,9 +179,7 @@ class Meadow(object):
         bug = Bug(bug_id=bug_id, bug_name=bug_name)
 
         if tile_pos is None:
-            x = random.randint(0, self.x_tiles - 1)
-            y = random.randint(0, self.y_tiles - 1)
-            tile_pos = x, y
+            tile_pos = self.get_random_position()
 
         bug.prev_tile_pos = tile_pos
         bug.tile_pos = tile_pos
@@ -227,14 +231,30 @@ class Meadow(object):
         bug.direction = direction
         bug.move_time = 0
 
+    def get_random_position(self):
+        where = random.choice('NWSE')
+        if where == 'N':
+            x = random.randint(0, self.x_tiles - 1)
+            y = 0
+        elif where == 'W':
+            x = 0
+            y = random.randint(0, self.y_tiles - 1)
+        elif where == 'S':
+            x = random.randint(0, self.x_tiles - 1)
+            y = self.y_tiles - 1
+        else:
+            x = self.x_tiles - 1
+            y = random.randint(0, self.y_tiles - 1)
+
+        return x, y
+
+
     def reset(self):
         self.sweets = []
         bugs = self.bugs.copy()
         for bug_id, bug in bugs.items():
             bug.score = 0
-            x = random.randint(0, self.x_tiles - 1)
-            y = random.randint(0, self.y_tiles - 1)
-            bug.tile_pos = (x, y)
+            bug.tile_pos = self.get_random_position()
         self.bugs = bugs
         print('it works')
 

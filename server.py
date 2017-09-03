@@ -18,6 +18,16 @@ LADYBUGS_ORDERS = ('N', 'S', 'W', 'E', 'X')
 
 MEADOW_SIZE = int(config.SERVER_WINDOW_SIZE[0] * 0.75), int(config.SERVER_WINDOW_SIZE[1] * 0.75)
 
+SERVER_ADDRESS = config.SERVER_ADDRESS
+
+try:
+    HOST = sys.argv[1]
+    PORT = int(sys.argv[2])
+except:
+    pass
+else:
+    SERVER_ADDRESS = (HOST, PORT)
+
 window = utils.Window(name='LadyBugs - server', size=config.SERVER_WINDOW_SIZE)
 meadow = utils.Meadow(size=MEADOW_SIZE, tile=config.TILE)
 
@@ -163,7 +173,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         print('finally')
 
 socketserver.ThreadingTCPServer.allow_reuse_address = True
-server = socketserver.ThreadingTCPServer(config.SERVER_ADDRESS, ThreadedTCPRequestHandler)
+server = socketserver.ThreadingTCPServer(SERVER_ADDRESS, ThreadedTCPRequestHandler)
 
 server_thread = threading.Thread(target=server.serve_forever)
 server_thread.daemon = True
@@ -192,6 +202,9 @@ def arena_challenge():
     arena_state = ArenaState.CHALLENGE
 
 def map_one():
+    meadow.clear_sweets()
+    meadow.random_sweets = 16
+    return
     sweets = []
     while len(sweets) < 10:
         x = random.random() * meadow.x_tiles
@@ -206,7 +219,7 @@ def map_one():
 def map_two():
     meadow.clear_sweets()
     sweets = []
-    for x in range(4, meadow.x_tiles - 4, 2):
+    for x in range(2, meadow.x_tiles - 1, 2):
         for y in range(2, meadow.y_tiles - 2, 2):
             sweets.append((x, y))
 
@@ -217,8 +230,8 @@ def map_two():
 def map_three():
     meadow.clear_sweets()
     sweets = []
-    for x in range(5, meadow.x_tiles - 5):
-        for y in range(2, meadow.y_tiles, 3):
+    for x in range(2, meadow.x_tiles - 2):
+        for y in range(2, meadow.y_tiles, 4):
             sweets.append((x, y))
 
     random.shuffle(sweets)
@@ -235,9 +248,9 @@ buttons.append(utils.Button((25, 820), BUTTON_SIZE, 'PAUSE', arena_pause))
 buttons.append(utils.Button((250, 700), BUTTON_SIZE, 'WAIT', arena_wait))
 buttons.append(utils.Button((250, 760), BUTTON_SIZE, 'CHALLENGE', arena_challenge))
 
-buttons.append(utils.Button((550, 700), BUTTON_SIZE, 'RANDOM 10', map_one))
-buttons.append(utils.Button((550, 760), BUTTON_SIZE, 'MAPA 2', map_two))
-buttons.append(utils.Button((550, 820), BUTTON_SIZE, 'MAPA 3', map_three))
+buttons.append(utils.Button((550, 700), BUTTON_SIZE, 'RANDOM 16', map_one))
+buttons.append(utils.Button((550, 760), BUTTON_SIZE, 'MAP X', map_two))
+buttons.append(utils.Button((550, 820), BUTTON_SIZE, 'MAP Y', map_three))
 
 while window.loop():
 
