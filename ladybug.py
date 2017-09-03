@@ -117,6 +117,7 @@ client_thread.daemon = True
 client_thread.start()
 
 bug_img = assets.get_bug_img(BUG_ID)
+bug_img = pygame.transform.scale(bug_img, (128, 128))
 info_q_txt = font.render('Wciśnij Q by wyłączyć program.', True, config.COLOR_WHITE)
 
 while window.loop():

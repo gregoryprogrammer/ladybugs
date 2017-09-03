@@ -21,6 +21,14 @@ def create_background(size, tile):
             pygame.draw.line(background, config.COLOR_GRAY_LIGHT, (x, 0), (x, size[1]))
             pygame.draw.line(background, config.COLOR_GRAY_LIGHT, (0, y), (size[0], y))
 
+    grass = assets.load_image('grass.png')
+    grass = pygame.transform.scale(grass, (config.TILE, config.TILE))
+    for y in range(y_tiles):
+        for x in range(x_tiles):
+            tx = x * config.TILE
+            ty = y * config.TILE
+            background.blit(grass, (tx, ty))
+
     pygame.draw.line(background, config.COLOR_GRAY_LIGHT, (0, height - 1), (width, height - 1))
     pygame.draw.line(background, config.COLOR_GRAY_LIGHT, (width - 1, 0), (width - 1, height))
 

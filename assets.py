@@ -1,11 +1,16 @@
 import os
+import sys
 import pygame
 
 MAIN_DIR = os.path.split(os.path.abspath(__file__))[0]
 
 def load_image(filename):
     filepath = os.path.join(MAIN_DIR, 'assets', filename)
-    surface = pygame.image.load(filepath)
+    try:
+        surface = pygame.image.load(filepath)
+    except:
+        print(filepath, sys.exc_info())
+        exit(1)
     return surface
 
 def load_font(filename, size):
@@ -20,7 +25,7 @@ def create_highlight(tile, color):
     return surface
 
 LADYBUGS_DIR = os.path.join(MAIN_DIR, 'assets', 'ladybugs')
-LADYBUGS_IMAGES = os.listdir(LADYBUGS_DIR)
+LADYBUGS_IMAGES = [ x for x in os.listdir(LADYBUGS_DIR) if x.endswith('png')]
 LADYBUGS_IDS = [os.path.splitext(bug)[0] for bug in LADYBUGS_IMAGES]
 LADYBUGS_SURFACES = [load_image(os.path.join(LADYBUGS_DIR, bug)) for bug in LADYBUGS_IMAGES]
 

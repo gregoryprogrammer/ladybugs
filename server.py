@@ -14,10 +14,6 @@ import config
 import assets
 import utils
 
-LADYBUGS_DIR = os.path.join(utils.MAIN_DIR, 'assets', 'ladybugs')
-LADYBUGS_IMAGES = os.listdir(LADYBUGS_DIR)
-LADYBUGS_IDS = [os.path.splitext(bug)[0] for bug in LADYBUGS_IMAGES]
-
 LADYBUGS_ORDERS = ('N', 'S', 'W', 'E', 'X')
 
 MEADOW_SIZE = int(config.SERVER_WINDOW_SIZE[0] * 0.75), int(config.SERVER_WINDOW_SIZE[1] * 0.75)
@@ -35,7 +31,7 @@ class ArenaState(Enum):
 
 arena_state = ArenaState.PAUSE
 
-print('Available ladybugs:', LADYBUGS_IDS)
+print('Available ladybugs:', assets.LADYBUGS_IDS)
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
@@ -44,10 +40,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         print('Bug connection incoming')
         try:
             recv = str(self.request.recv(config.MSG_LEN), 'utf8')
-            print('RECV = ', recv)
             try:
                 bug_id, bug_name = recv.split(',')
             except:
+                print('RECV = ', recv)
                 return
             print('bug_id:', bug_id)
 
@@ -57,7 +53,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 self.request.sendall(tosend)
                 return
 
-            if bug_id not in LADYBUGS_IDS:
+            if bug_id not in assets.LADYBUGS_IDS:
 
                 jdata = {'server_msg': 'Brak biedronki {}.'.format(bug_id)}
                 tosend = bytes(json.dumps(jdata), 'utf8')
@@ -259,7 +255,6 @@ while window.loop():
     # check buttons
     if window.mouse_just_pressed:
         for button in buttons:
-            print('check button', button)
             if button.collides(mouse_pos):
                 button.callback()
 
