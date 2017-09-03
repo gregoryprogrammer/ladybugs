@@ -1,5 +1,10 @@
 # Biedronki
 
+## Wymagania
+
+    Python 3.6
+    pygame 1.9.3
+
 ## Serwer
 
 Konfiguracja w config.py
@@ -16,7 +21,7 @@ Uruchomienie klientaa gdy program.py skonfigurowany
 
     python3 ladybug.py
 
-Konfiguracja z linii komend
+Do testów można podać konfigurację z linii komend
 
     python3 ladybug.py HOST_IP BUG_ID BUG_NAME
 
