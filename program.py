@@ -1,6 +1,8 @@
 import sys
 import random
 
+import pygame
+
 # Dane do połączenia
 HOST = 'localhost'
 PORT = 32323
@@ -56,8 +58,21 @@ def do_pierwszego(dane):
     else:
         return 'S'
 
+def sterowanie_klawiszami(dane):
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] == True:
+        return 'W'
+    elif keys[pygame.K_RIGHT] == True:
+        return 'E'
+    elif keys[pygame.K_UP] == True:
+        return 'N'
+    elif keys[pygame.K_DOWN] == True:
+        return 'S'
+    return 'X'
 
-PROGRAM = losowy_ruch
+
+PROGRAM = sterowanie_klawiszami
+# PROGRAM = losowy_ruch
 # PROGRAM = na_wschod
 # PROGRAM = dookola
 # PROGRAM = do_pierwszego
